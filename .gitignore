@@ -8,12 +8,9 @@ wandb/
 
 inference_outputs/
 
-# 模型权重和大文件 (新增)
-*.pth
 *.pt
 *.ckpt
 *.h5
-weights/
 .cache/
 .cache/torch/checkpoints/
 knot_dataset/
