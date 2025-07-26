@@ -1,0 +1,33 @@
+# Configuration for inference on SE(3) diffusion experiments.
+defaults:
+  - base
+
+inference:
+  name: KnotDiffusion
+  gpu_id: 0  # CUDA GPU to use
+  seed: 123
+
+  # Directory of software, weights, and outputs.
+  pt_hub_dir: ./.cache/torch/
+  pmpnn_dir: ./ProteinMPNN/
+  output_dir: ./inference_outputs/
+
+  # Path to model weights.
+  weights_path: ./weights/finetuned/knot_weights.pth
+
+  diffusion:
+    # Number of steps.
+    num_t: 500
+    # Analogous to sampling temperature.
+    noise_scale: 0.1
+    # Final t.
+    min_t: 0.01
+
+  samples:
+    # Number of ESMFdold samples per backbone sample.
+    seq_per_sample: 4
+    # Minimum sequence length to sample.
+    min_length: 100
+    # Maximum sequence length to sample.
+    max_length: 500
+
