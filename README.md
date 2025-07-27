@@ -112,7 +112,7 @@ inference_outputs/
     │       ├── esmf/               # ESMFold predictions
     │       ├── seqs/               # ProteinMPNN sequences
     |       ├── parsed_pdbs.jsonl   # Parsed chains for ProteinMPNN
-    │       ├── sample_1.pdb
+    │       ├── sample_1.pdb        # the copy of final sample
     │       └── sc_results.csv      # Metrics summary
     └── length_356_2/               # Sample 2 (356 residues)
         └── ...
