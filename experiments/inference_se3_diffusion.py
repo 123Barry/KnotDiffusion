@@ -112,13 +112,11 @@ class Sampler:
         # Set-up directories
         self._weights_path = self._infer_conf.weights_path
         output_dir =self._infer_conf.output_dir
+        time_string = datetime.now().strftime("%dD_%mM_%YY_%Hh_%Mm_%Ss")
         if self._infer_conf.name is None:
-            dt_string = datetime.now().strftime("%dD_%mM_%YY_%Hh_%Mm_%Ss")
+            dt_string = time_string
         else:
-            dt_string = self._infer_conf.name
-        base_name = os.path.basename(self._weights_path)
-        weights_path = os.path.splitext(base_name)[0]
-        dt_string = dt_string + '_' + weights_path 
+            dt_string = self._infer_conf.name + '_' + time_string
         self._output_dir = os.path.join(output_dir, dt_string)
         os.makedirs(self._output_dir, exist_ok=True)
         self._log.info(f'Saving results to {self._output_dir}')
