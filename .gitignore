@@ -15,7 +15,7 @@ inference_outputs/
 .cache/torch/checkpoints/
 knot_dataset/
 knot_pkl/
-Knotted_Proteins.tar.gz
+knotted_proteins.tar.gz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

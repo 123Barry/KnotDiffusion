@@ -2,6 +2,10 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.YOUR_DOI.svg)](https://doi.org/10.5281/zenodo.YOUR_DOI)
 
+<div align="center">
+  <img src="./media/Figure_1.png" alt="KnotDiffusion Demo" width="800">
+</div>
+
 This repository contains the official implementation of the paper **KnotDiffusion: A Generative Model for De Novo Design of Knotted Proteins**. KnotDiffusion is a specialized diffusion model for generating knotted protein backbones. Built upon the original [SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion), our approach fine-tunes the model on a curated dataset of knotted proteins to enable generation of complex, topologically non-trivial protein structures.
 
 ## 🔬 Key Features
@@ -99,15 +103,17 @@ Generated samples are saved to `inference_outputs/` with the following structure
 ```
 inference_outputs/
 └── 27D_07M_2025Y_5h_26m_50s/
-    ├── inference_conf.yaml          # Configuration used
-    ├── length_195_1/                # Sample 1 (195 residues)
-    │   ├── sample_1.pdb            # Generated backbone
-    │   ├── bb_traj_1.pdb           # Diffusion trajectory
+    ├── inference_conf.yaml         # Configuration used
+    ├── length_195_1/               # Sample 1 (195 residues)
+    │   ├── bb_traj_1.pdb           # x_{t-1} diffusion trajectory
+    │   ├── sample_1.pdb            # Final sample
     │   ├── x0_traj_1.pdb           # Model predictions
-    │   └── self_consistency/        # Analysis results
+    │   └── self_consistency/       # Self consistency results 
     │       ├── esmf/               # ESMFold predictions
-    │       ├── sc_results.csv      # Metrics summary
-    │       └── seqs/               # ProteinMPNN sequences
+    │       ├── seqs/               # ProteinMPNN sequences
+    |       ├── parsed_pdbs.jsonl   # Parsed chains for ProteinMPNN
+    │       ├── sample_1.pdb
+    │       └── sc_results.csv      # Metrics summary
     └── length_356_2/               # Sample 2 (356 residues)
         └── ...
 ```
@@ -175,7 +181,7 @@ If you use KnotDiffusion in your research, please cite both our work and the ori
 
 ## 🤝 Acknowledgements
 
-This work builds upon the foundational [SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion) by Yim et al. We thank the authors for their excellent work and open-source implementation.
+This work builds upon the foundational [SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion) by Yim et al. We thank the authors for their excellent work and open-source implementation. Go give this repos a star if you use this codebase!
 
 We also acknowledge the [KnotProt 2.0](http://knotprot.cent.uw.edu.pl/) and [AlphaKnot 2.0](https://alphaknot.cent.uw.edu.pl/) databases for providing high-quality knotted protein structures.
 
