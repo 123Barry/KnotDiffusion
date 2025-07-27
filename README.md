@@ -2,21 +2,22 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.YOUR_DOI.svg)](https://doi.org/10.5281/zenodo.YOUR_DOI)
 
-This repository contains the official implementation of the paper **KnotDiffusion: A Generative Model for De Novo Design of Knotted Proteins.**. KnotDiffusion is a specialized diffusion model for generating knotted protein backbones. Built upon the original [SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion), our approach fine-tunes the model on a curated dataset of knotted proteins to enable generation of complex, topologically non-trivial protein structures.
+This repository contains the official implementation of the paper **KnotDiffusion: A Generative Model for De Novo Design of Knotted Proteins**. KnotDiffusion is a specialized diffusion model for generating knotted protein backbones. Built upon the original [SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion), our approach fine-tunes the model on a curated dataset of knotted proteins to enable generation of complex, topologically non-trivial protein structures.
 
 ## 🔬 Key Features
 
-- **Specialized Dataset**: Over 200,000 knotted proteins from KnotProt 2.0 and AlphaKnot 2.0 databases
+- **Specialized Dataset**: Over 200,000 knotted proteins from [KnotProt 2.0](http://knotprot.cent.uw.edu.pl/) and [AlphaKnot 2.0](https://alphaknot.cent.uw.edu.pl/) databases
 - **Fine-tuned Model**: Enhanced performance for generating valid and diverse knotted protein backbones
 
 ## 📋 Table of Contents
 
-- [Installation](#installation)
-- [Dataset Setup](#dataset-setup)
-- [Inference](#inference)
-- [Fine-tuning](#fine-tuning)
-- [Citation](#citation)
-- [Acknowledgements](#acknowledgements)
+- [🚀 Installation](#-installation)
+- [📊 Dataset Setup](#-dataset-setup)
+- [🔬 Inference](#-inference)
+- [🎯 Fine-tuning](#-fine-tuning)
+- [📚 Citation](#-citation)
+- [🤝 Acknowledgements](#-acknowledgements)
+
 
 ## 🚀 Installation
 
