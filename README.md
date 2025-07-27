@@ -1,298 +1,218 @@
-# SE(3) diffusion model with application to protein backbone generation
+# KnotDiffusion: Fine-tuning SE(3) Diffusion Models for Knotted Protein Backbone Generation
 
-## Description
-Implementation for "SE(3) diffusion model with application to protein backbone generation" [arxiv link](https://arxiv.org/abs/2302.02277).
-While our work is tailored towards protein backbone generation, it is in principle applicable to other domains where SE(3) is utilized.
+This repository contains the official implementation for **KnotDiffusion**, a project focused on generating knotted protein backbones. This work is an extension and application of the original **[SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion)**, first presented in the paper "[SE(3) diffusion model with application to protein backbone generation](https://arxiv.org/abs/2302.02277)".
 
-> For those interested in non-protein applications, we have prepared a minimal notebook with SO(3) diffusion
-> https://colab.research.google.com/github/blt2114/SO3_diffusion_example/blob/main/SO3_diffusion_example.ipynb 
+Our core contribution is the fine-tuning of the original model on a specialized, high-quality dataset of knotted proteins, enabling the generation of complex and topologically non-trivial protein structures.
 
-We have codebase updates we plan to get around to.
+## Citation
 
-* [In the works] Refactor score framework to be more readable and match the paper's math. See the [refactor branch](https://github.com/jasonkyuyim/se3_diffusion/tree/unsupported_refactor).
-* Set-up easily downloadable training data.
+If you use KnotDiffusion, our fine-tuned models, or the associated dataset in your research, we kindly ask that you cite **both** our future work and the original SE(3) diffusion model paper.
 
-We welcome pull requests (especially bug fixes) and contributions.
-We will try out best to improve readability and answer questions!
-
-If you use our work then please cite
-```
+```bibtex
 @article{yim2023se,
-  title={SE (3) diffusion model with application to protein backbone generation},
+  title={SE(3) diffusion model with application to protein backbone generation},
   author={Yim, Jason and Trippe, Brian L and De Bortoli, Valentin and Mathieu, Emile and Doucet, Arnaud and Barzilay, Regina and Jaakkola, Tommi},
   journal={arXiv preprint arXiv:2302.02277},
   year={2023}
 }
-```
 
+@artile{knotdiffusion_2025,
+  title={KnotDiffusion: A Generative Model for De Novo Design of Knotted Proteins},
+  author={Wang, Qingquan and Deng, Puqing},
+  journal={Biomacromolecules},
+  year={2025}
+}
 
-Other protein diffusion codebases:
-* Pretrained protein backbone diffusion: [RFdiffusion](https://github.com/RosettaCommons/RFdiffusion)
-* Protein-ligand docking: [DiffDock](https://github.com/gcorso/DiffDock)
-* Protein torsion angles: [FoldingDiff](https://github.com/microsoft/foldingdiff/)
-* Protein C-alpha backbone generation: [ProtDiff/SMCDiff](https://github.com/blt2114/ProtDiff_SMCDiff)
+## Core Differences from the Original Work
 
-LICENSE: MIT
+This project extends the original SE(3) diffusion model with the following key contributions:
 
-![framediff-landing-page](https://github.com/jasonkyuyim/se3_diffusion/blob/master/media/denoising.gif)
+* **Specialized Dataset**: We introduce and utilize a high-quality dataset of over 200,000 knotted proteins, aggregated from the [KnotProt 2.0](http://knotprot.cent.uw.edu.pl/) and [AlphaKnot 2.0](https://alphaknot.cent.uw.edu.pl/) databases. This provides a focused training corpus for proteins with complex topologies.
 
-## Update
+* **Fine-tuned Model**: We provide a model checkpoint, fine-tuned on our specialized dataset, which demonstrates improved performance and stability in generating valid and diverse knotted protein backbones.
 
-### June 27, 2023
+## Table of Contents
 
-- **Bucketize bug**. We discovered an unfortunate bug in the SO3 component of the score approximation computation. The issue was the use of `torch.bucketize` when accessing cached IGSO3 density values `torch_score` of `SO3Diffuser`; since the `bucketize` function does not track gradients, this operation effectively introduced a stopgrad on the angle of rotation component of the rotation score thereby expectedly blocking some gradients during training. We have fixed this now but it has caused model performance to change. 
-- **Clustered training.** We added the ability use clustered data during training. We found this to greatly improve sample diversity. See [Downloading PDB clusters](#downloading-pdb-clusters).
-- **New configs**. 
-  - `config/base.yaml` updated with the best parameters we have found. They surpass the ICML published results (see table). The changes are the following:
-    - Batching with `experiment.sampling_mode=cluster_time_batch`.
-    - A new rotation loss that includes explicit penalties of errors in the axis and angle components of the loss on conditional score estimate `experiment.separate_rot_loss=True`. This was part of the published model with the bug that we accidentally found to help. We found it beneficial to down-weight the angle term of the rotation loss, `experiment.rot_loss_weight=0.5`, and turn off the angle term for t<0.2, `experiment.rot_loss_t_threshold=0.2`. Though heuristic, we find this loss to further outperform the DSM loss by our metrics.
-  - `config/pure_dsm.yaml` same as `config/base.yaml` except has `experiment.separate_rot_loss=False` and instead uses the DSM rotation loss described in our paper, but without the `bucketize` bug.
-  - `config/icml_published.yaml` in case one wants to reproduce results from the ICML paper.
-
-We are still running some experiments to verify these improvements but we wanted to get this out sooner for researchers building on our codebase.
-Here is a table of our preliminary results so far:
-
-|                            | icml_published.yaml | base.yaml |
-| -------------------------- | ------------------- | --------- |
-| Designability (scRMSD < 2) | 0.29                | 0.34      |
-| Diversity (TM cutoff 0.5)  | 0.43                | 0.61      |
-
-We fine-tuned one of our checkpoints for the `base.yaml` results. `pure_dsm.yaml` model is training.
-We will update the table of `base.yaml` once it is finished training from scratch (unfortunately this takes at least a week).
-There's pretty strong signal that our new settings are showing large improvements across our metrics.
-
-The weights used to get the `icml_published.yaml` results are in `weights/paper_weights.pth` while the weights to get the `base.yaml`results are in `weights/best_weights.pth`.
-
-The authors are currently all very busy until the Fall (Jason is currently interning).
-However, we are committed to answering questions and fixing any bugs.
-Please email us or raise an issue if you have any concerns or questions.
-
-# Table of **Contents**
-- [SE(3) diffusion model with application to protein backbone generation](#se3-diffusion-model-with-application-to-protein-backbone-generation)
-  - [Description](#description)
-  - [Update](#update)
-    - [June 27, 2023](#june-27-2023)
-- [Table of **Contents**](#table-of-contents)
 - [Installation](#installation)
-    - [Third party source code](#third-party-source-code)
+  - [Third party source code](#third-party-source-code)
+- [Dataset Setup](#dataset-setup)
+  - [Download the Dataset](#download-the-dataset)
+  - [Data Sources and Citation](#data-sources-and-citation)
 - [Inference](#inference)
-- [Training](#training)
-    - [Downloading the PDB for training](#downloading-the-pdb-for-training)
-    - [Downloading PDB clusters](#downloading-pdb-clusters)
-    - [Batching modes](#batching-modes)
-    - [Launching training](#launching-training)
-    - [Intermittent evaluation](#intermittent-evaluation)
+  - [Generating Knotted Proteins](#generating-knotted-proteins)
+- [Fine-tuning](#fine-tuning)
+  - [Download the Base Model](#download-the-base-model)
+  - [Launching Fine-tuning](#launching-fine-tuning)
+  - [Evaluation](#evaluation)
 - [Acknowledgements](#acknowledgements)
 
 
-# Installation
+## Installation
 
-We recommend [miniconda](https://docs.conda.io/en/main/miniconda.html) (or anaconda).
-Run the following to install a conda environment with the necessary dependencies.
+We highly recommend using [Mambaforge](https://github.com/conda-forge/miniforge#mambaforge) or installing Mamba into your existing Conda environment for significantly faster dependency resolution.
+
+1.  **Create the environment with Mamba.** The following command uses `mamba` to create a new environment named `se3` and install all the necessary dependencies from the provided `se3.yml` file.
+
+    ```bash
+    mamba env create -f se3.yml
+    ```
+
+2.  **Activate the environment.** Once the installation is complete, activate the newly created environment. Note: environment activation still uses the `conda` command.
+
+    ```bash
+    conda activate se3
+    ```
+
+3.  **Install the KnotDiffusion package.** Finally, install the KnotDiffusion codebase as an editable package. This allows you to make changes to the source code that will be immediately effective.
+
+    ```bash
+    pip install -e .
+    ```
+
+After these steps, your environment will be fully set up to run the experiments.
+
+
+## Dataset Setup
+
+This project requires a specialized dataset of knotted proteins, which is not included directly in this repository due to its size. The dataset must be downloaded and set up manually by following the steps below.
+
+### Download the Dataset
+
+The dataset is permanently archived on **Zenodo** to ensure long-term availability and is assigned a Digital Object Identifier (DOI). We strongly recommend using the DOI to access the dataset's record page for the most stable download link.
+
+**DOI:** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.YOUR_DOI.svg)](https://doi.org/10.5281/zenodo.YOUR_DOI)
+*(Note: Please replace `YOUR_DOI` with the actual DOI number you receive after publishing your dataset on Zenodo.)*
+
+You can download and extract the dataset using the following commands in your terminal:
+
 ```bash
-conda env create -f se3.yml
-```
+# Step 1: Download the dataset archive from the Zenodo link.
+wget -O knotted_proteins.tar.gz "[https://zenodo.org/uploads/16492608/knotted_proteins.tar.gz](https://zenodo.org/uploads/16492608/knotted_proteins.tar.gz)"
 
-Next, we recommend installing our code as a package. To do this, run the following.
-```
-pip install -e .
-```
+# Step 2: Uncompress the archive.
+# This command will create the ./knot_dataset/ directory in the project root.
+tar -xzvf knotted_proteins.tar.gz
 
-### Third party source code
+# Step3: Preprocess the Data
+# Run the provided script to process the raw .pdb files into a more efficient .pkl format for faster loading during training. This script will create a ./knot_pkl/ directory and a ./knot_metadata.csv file that tracks the processed samples.
+python ./data/process_pdb_files.py
 
-Our repo keeps a fork of [OpenFold](https://github.com/aqlaboratory/openfold) since we made a few changes to the source code.
-Likewise, we keep a fork of [ProteinMPNN](https://github.com/dauparas/ProteinMPNN).
-Each of these codebases are actively under development and you may want to refork.
-We use copied and adapted several files from the [AlphaFold](https://github.com/deepmind/alphafold) primarily in `/data/`, and have left the DeepMind license at the top of these files.
-For a differentiable pytorch implementation of the Logarithmic map on SO(3) we adapted two functions form [geomstats](https://github.com/geomstats/geomstats).
-Go give these repos a star if you use this codebase!
+# Final Directory Structure
+After completing all the steps above, your project directory should look like this:
+.
+├── knot_dataset/
+│   ├── protein_001.pdb
+│   ├── protein_002.pdb
+│   └── ... (many .pdb files)
+│
+├── knot_pkl/
+│   ├── protein_001.pkl
+│   ├── protein_002.pkl
+│   └── ... (many .pkl files)
+│
+├── data/
+│   └── process_pdb_files.py
+│
+├── ...
 
-# Inference
 
-`inference_se3_diffusion.py` is the inference script. It utilizes [Hydra](https://hydra.cc).
-Training can be done with the following.
-```python
+## Inference
+
+This section describes how to generate *de novo* knotted protein backbones using the provided fine-tuned KnotDiffusion model.
+
+### Model Checkpoints
+
+We provide two sets of model weights within this repository. The fine-tuned KnotDiffusion model is used by default for inference.
+
+The directory structure for the weights is as follows:
+```bash
+weights/
+├── finetuned/
+│   └── knot_weights.pth      # (Default) Fine-tuned for knotted proteins
+└── original_paper/
+    └── best_weights.pth      # Original weights from the FrameDiff paper
+
+KnotDiffusion Weights (finetuned/knot_weights.pth): This is the default checkpoint, fine-tuned on our specialized knotted proteins dataset. It is recommended for generating novel knotted structures.
+
+Original FrameDiff Weights (original_paper/best_weights.pth): These are the original pre-trained weights from the "SE(3) diffusion model" paper, included here for reproducibility and comparison.
+
+Generating Knotted Proteins
+The main inference script is experiments/inference_se3_diffusion.py, which utilizes Hydra for configuration.
+
+To run inference, execute the following command:
 python experiments/inference_se3_diffusion.py
-```
-The config for inference is in `config/inference.yaml`.
-See the config for different inference options.
-By default, inference will use the published paper weights in `weights/paper_weights.pth`.
-Simply change the `weights_path` to use your custom weights.
-```yaml
+
+By default, this will use the fine-tuned knot_weights.pth and generate 2,000 protein backbone samples. In our modified sampling scheme, each sample's length is randomly chosen from a uniform distribution between 100 and 500 residues.
+
+Output Structure
+Generated samples and their analysis will be saved to the inference_outputs/ directory by default.
+
+Configuration
+You can customize the inference process by editing config/inference.yaml. To use a different set of model weights (for example, to use the original FrameDiff paper's weights), simply modify the weights_path field:
+
 inference:
     weights_path: <path>
-```
-Samples will be saved to `output_dir` in the `inference.yaml`. By default it is
-set to `./inference_outputs/`. Sample outputs will be saved as follows,
 
-```shell
-inference_outputs
-└── 12D_02M_2023Y_20h_46m_13s           # Date time of inference.
-    ├── inference_conf.yaml             # Config used during inference.
-    └── length_100                      # Sampled length 
-        ├── sample_0                    # Sample ID for length
-        │   ├── bb_traj_1.pdb           # x_{t-1} diffusion trajectory
-        │   ├── sample_1.pdb            # Final sample
-        │   ├── self_consistency        # Self consistency results        
-        │   │   ├── esmf                # ESMFold predictions using ProteinMPNN sequences
-        │   │   │   ├── sample_0.pdb
-        │   │   │   ├── sample_1.pdb
-        │   │   │   ├── sample_2.pdb
-        │   │   │   ├── sample_3.pdb
-        │   │   │   ├── sample_4.pdb
-        │   │   │   ├── sample_5.pdb
-        │   │   │   ├── sample_6.pdb
-        │   │   │   ├── sample_7.pdb
-        │   │   │   └── sample_8.pdb
-        │   │   ├── parsed_pdbs.jsonl   # Parsed chains for ProteinMPNN
-        │   │   ├── sample_1.pdb
-        │   │   ├── sc_results.csv      # Summary metrics CSV 
-        │   │   └── seqs                
-        │   │       └── sample_1.fa     # ProteinMPNN sequences
-        │   └── x0_traj_1.pdb           # x_0 model prediction trajectory
-        └── sample_1                    # Next sample
-```
+inference_outputs/
+└── 27D_07M_2025Y_11h_57m_50s          # Date and time of the inference run.
+    ├── inference_conf.yaml            # Config used during inference.
+    ├── length_195_1/                  # Sample 1, with a length of 195
+    │   ├── sample_1.pdb               # Final generated backbone sample
+    │   ├── self_consistency/          # Self-consistency analysis results
+    │   │   ├── esmf/                  # ESMFold predictions
+    │   │   │   ├── sample_0.pdb
+    │   │   │   └── ...
+    │   │   ├── parsed_pdbs.jsonl      # Parsed chains for ProteinMPNN
+    │   │   ├── sc_results.csv         # Summary of self-consistency metrics
+    │   │   └── seqs/
+    │   │       └── sample_1.fa        # ProteinMPNN designed sequences
+    │   ├── bb_traj_1.pdb              # Diffusion trajectory of the backbone
+    │   └── x0_traj_1.pdb              # Trajectory of the model's x_0 prediction
+    └── length_356_2/                  # Sample 2, with a length of 356
+        └── ...                        # (and so on for all 2,000 samples)
 
-# Training
 
-### Downloading the PDB for training
-To get the training dataset, first download PDB then preprocess it with our provided scripts.
-PDB can be downloaded from RCSB: https://www.wwpdb.org/ftp/pdb-ftp-sites#rcsbpdb.
-Our scripts assume you download in **mmCIF format**.
-Navigate down to "Download Protocols" and follow the instructions depending on your location.
+## Fine-tuning
 
-> WARNING: Downloading PDB can take up to 1TB of space.
+Instead of training from scratch, this project focuses on **fine-tuning** the pre-trained SE(3) diffusion model on our specialized knotted proteins dataset. This allows for more efficient training while leveraging the powerful, generalized features learned by the original model.
 
-After downloading, you should have a directory formatted like this:
-https://files.rcsb.org/pub/pdb/data/structures/divided/mmCIF/ 
-```
-00/
-01/
-02/
-..
-zz/
-```
-In this directory, unzip all the files: 
-```
-gzip -d **/*.gz
-```
-Then run the following with <path_pdb_dir> replaced with the location of PDB.
-```python
-python process_pdb_dataset.py --mmcif_dir <pdb_dir> 
-```
-See the script for more options. Each mmCIF will be written as a pickle file that
-we read and process in the data loading pipeline. A `metadata.csv` will be saved
-that contains the pickle path of each example as well as additional information
-about each example for faster filtering.
+---
 
-For PDB files, we provide some starter code in `process_pdb_files.py`  of how to
-modify `process_pdb_dataset.py` to work with PDB files (as we did at an earlier
-point in the project). **This has not been tested.** Please make a pull request
-if you create a PDB file processing script.
+### Base Model for Fine-tuning
 
-### Downloading PDB clusters
-To use clustered training data, download the clusters at 30% sequence identity
-at [rcsb](https://www.rcsb.org/docs/programmatic-access/file-download-services#sequence-clusters-data).
-This download link also works at time of writing:
-```
-https://cdn.rcsb.org/resources/sequence/clusters/clusters-by-entity-30.txt
-```
-Place this file in `data/processed_pdb` or anywhere in your file system.
-Update your config to point to the clustered data:
+Fine-tuning starts from the pre-trained weights of the original **[SE(3) diffusion model](https://github.com/jasonkyuyim/se3_diffusion)**. For your convenience, these weights are already included in this repository.
+
+The base model checkpoint, `best_weights.pth`, is located in the `./weights/original_paper/` directory, and the fine-tuning configuration is pre-set to use this checkpoint as a warm start. No download is required.
+
+---
+
+### Launching the Fine-tuning Run
+
+The configuration for fine-tuning is primarily controlled by `config/base.yaml`.
+
+#### Configuration
+
+Ensure the following paths in `config/base.yaml` are correctly set up. The `warm_start` option points to the directory containing the pre-trained model checkpoint, which will be loaded at the beginning of the training run.
+
 ```yaml
+# In config/base.yaml
 data:
-  cluster_path: ./data/processed_pdb/clusters-by-entity-30.txt
-```
-To use clustered data, set `sample_mode` to either `cluster_time_batch` or `cluster_length_batch`.
-See next section for details.
+  # Path to the metadata CSV generated during data preprocessing.
+  csv_path: ./knot_metadata.csv
 
-### Batching modes
+  # Path to the training cluster file.
+  cluster_path: ./train_cluster.txt
 
-```yaml
 experiment:
-  # Use one of the following.
+  # Directory to warm-start from. This loads the original FrameDiff weights.
+  warm_start: ./weights/original_paper/
 
-  # Each batch contains multiple time steps of the same protein.
-  sample_mode: time_batch
 
-  # Each batch contains multiple proteins of the same length.
-  sample_mode: length_batch
-
-  # Each batch contains multiple time steps of a protein from a cluster.
-  sample_mode: cluster_time_batch
-
-  # Each batch contains multiple clusters of the same length.
-  sample_mode: cluster_length_batch
-```
-
-### Launching training 
-`train_se3_diffusion.py` is the training script. It utilizes [Hydra](https://hydra.cc).
-Hydra does a nice thing where it will save the output, config, and overrides of each run to the `outputs/` directory organized by date and time. By default we use 2 GPUs to fit proteins up to length 512. The number of GPUs can be changed with the `num_gpus` field in `base.yml`.
-
-Training can be done with the following.
-```python
+Launching the Run
+Once the configuration is set, start the fine-tuning process by running the main training script:
 python experiments/train_se3_diffusion.py
-```
-The config for training is in `config/base.yaml`.
-See the config for different training options.
-Training will write losses and additional information in the terminal.
 
-We support wandb which can be turned on by setting the following option in the config.
+Outputs and Evaluation
+The training script will periodically save model checkpoints to the ckpt/ directory and run intermittent evaluations, saving generated samples to eval_outputs/.
 
-```yaml
-experiment:
-    use_wandb: True
-```
-
-Multi-run can be achieved with the `-m` flag. The config must specify the sweep.
-For an example, in `config/base.yaml` we can have the following:
-```yaml
-defaults:
-  - override hydra/launcher: joblib
-
-hydra:
-  sweeper:
-    params:
-      model.node_embed_size: 128,256
-```
-This instructs hydra to use [joblib](https://joblib.readthedocs.io/en/latest/)
-as a pipeline for launching a sweep over `data.rosetta.filtering.subset` for two
-different values. You can specify a swep with the `-m` flag. The training script
-will automatically decide which GPUs to use for each sweep. You have to make sure
-enough GPUs are available on your server.
-
-```python
-python experiments/train_se3_diffusion.py -m
-```
-Each training run outputs the following.
-* Model checkpoints are saved to `ckpt`.
-* Hydra logging is saved to `outputs/` including configs and overrides.
-* Samples during intermittent evaluation (see next section) are saved to `eval_outputs`.
-* Wandb outputs are saved to `wandb`.
-
-### Intermittent evaluation
-
-Training also performs evaluation everytime a checkpoint is saved.
-We select equally spaced lengths between the minimum and maximum lengths seen during training and sample multiple backbones for each length.
-These are then evaluated with different metrics such as secondary structure composition, radius of gyration, chain breaks, and clashes.
-
-> We additionally evaluate TM-score of the sample with a selected example from the training set.
-> This was part of a older research effort for something like protein folding.
-> We keep this since it'll likely be useful to others but it can be ignored for 
-> the task of unconditional generation.
-
-All samples and their metrics can be visualized in wandb (if it was turned on).
-The terminal will print the paths to which the checkpoint and samples are saved.
-```bash
-[2023-02-09 15:10:25,097][__main__][INFO] - Checkpoints saved to: <ckpt_path>
-[2022-02-09 15:10:25,097][__main__][INFO] - Evaluation saved to: <sample_path>
-```
-This can also be found in the config in Wandb by searching `ckpt_dir`.
-Once you have a good run, you can copy and save the weights somewhere for inference.
-
-# Acknowledgements
-
-Thank you to the following for pointing out bugs:
-* longlongman
-* amorehead
-
+The output structure and detailed evaluation metrics are consistent with the original project. For a comprehensive overview of the training outputs, please refer to the Training section of the original **[FrameDiff repository](https://github.com/jasonkyuyim/se3_diffusion)**.
