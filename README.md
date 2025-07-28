@@ -1,6 +1,6 @@
 # KnotDiffusion: Fine-tuning SE(3) Diffusion Models for Knotted Protein Backbone Generation
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.YOUR_DOI.svg)](https://doi.org/10.5281/zenodo.YOUR_DOI)
+[![DOI](https://zenodo.org/records/16492608)](https://zenodo.org/records/16492608)
 
 <div align="center">
   <img src="./media/Figure_1.png" alt="KnotDiffusion Demo" width="800">
@@ -46,7 +46,7 @@ The dataset is archived on Zenodo with a permanent DOI:
 
 ```bash
 # Download dataset
-wget -O knotted_proteins.tar.gz "https://zenodo.org/uploads/16492608/knotted_proteins.tar.gz"
+wget -O knotted_proteins.tar.gz "https://zenodo.org/records/16492608/files/knotted_proteins.tar.gz"
 
 # Extract dataset
 tar -xzvf knotted_proteins.tar.gz
