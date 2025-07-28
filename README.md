@@ -1,6 +1,6 @@
 # KnotDiffusion: Fine-tuning SE(3) Diffusion Models for Knotted Protein Backbone Generation
 
-[![DOI](https://zenodo.org/records/16492608)](https://zenodo.org/records/16492608)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16492608.svg)](https://doi.org/10.5281/zenodo.16492608)
 
 <div align="center">
   <img src="./media/Figure_1.png" alt="KnotDiffusion Demo" width="800">
